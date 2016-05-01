@@ -15,12 +15,14 @@ boolean task1 = true;
 int avgRed;
 int avgGreen;
 int avgBlue;
-int chosenTarget;
+int chosenTarget = -1;
+float pTime;
+float lTime;
 
   private class Target
   {
     int target = 0;
-    //int action = 0;
+    int action = 0;
   }
 
   int trialCount = 5; //this will be set higher for the bakeoff
@@ -81,20 +83,61 @@ int chosenTarget;
       return;
     }
     
+    Target t = targets.get(trialIndex);
     
- 
+    if (task1){
     fill(255);//white
     text("Trial " + (trialIndex+1) + " of " +trialCount, width/2, 50);
-    text("Target #" + ((targets.get(trialIndex).target)+1), width/2, 100);
+    text("Target #" + ((t.target)+1), width/2, 100);
+    }
+    int targetNum = t.target;
+    if (task1){
+      if (targetNum == chosenTarget){
+        println("target chosen");
+        task1 = false;
+        chosenTarget = -1;
+      }
+    }
     
-    //if (targets.get(trialIndex).action==0)
-    //  text("UP", width/2, 150);
-    //else
-    //   text("DOWN", width/2, 150);
+    if (!task1){
+    if (t.action==1)
+     text("LEFT", width/2, 150);
+    else
+      text("RIGHT", width/2, 150);
+    }
+    
+    if (lTime > pTime) { //left to right
+      if (t.action == 0) {
+        println("right direction");
+        trialIndex++;
+        lTime = 0;
+        pTime = 0;
+        task1 = true;
+      }
+      else {
+        println("wrong direction");
+      } 
+    }
+    
+    else if (lTime < pTime) {
+      if(t.action == 1){
+        println("right direction");
+        lTime = 0;
+        pTime = 0;
+        trialIndex++;
+        task1 = true;
+      }
+      else {
+        println("wrongDirection");
+      }
+    }
+    
   }
 
-void onCameraPreviewEvent(){
+void mousePressed(){
+  println("here");
   if (cam.isStarted()){
+    println("camera started");
   cam.read();
   cam.loadPixels();
   float red = 0;
@@ -130,13 +173,22 @@ void onCameraPreviewEvent(){
     chosenTarget = 3;
   
   task1 = false;
+  }
+  else {
+    cam.start();
+  }  
 }
-}
-  
 
-void onLightEvent(float v) //this just updates the light value
-{
-  light = v;
+void onProximityEvent(float d){
+  if (!task1)
+    pTime = millis();
+}
+
+void onLightEvent(float v){
+  if (!task1)
+    lTime = millis();
+  else 
+    light = v;
 }
 
 //red: 255, 0 , 0
